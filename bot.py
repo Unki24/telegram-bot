@@ -1,16 +1,21 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
-import random
 import os
+import random
+from flask import Flask, request
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Dispatcher, CommandHandler, CallbackQueryHandler
 
-# Комплименты
+TOKEN = os.environ.get("BOT_TOKEN")
+bot = Bot(token=TOKEN)
+app = Flask(__name__)
+
 romantic = ["Ты делаешь мою жизнь ярче одним взглядом ✨", "С тобой каждый момент кажется волшебным 🌟"]
 motivational = ["Ты справишься — в тебе огромная сила 🔥", "Каждый шаг вперёд — уже победа 🏁"]
 funny = ["Ты как Wi-Fi в кафе — притягиваешь всех без исключения 📶", "С тобой даже понедельник кажется пятницей 🎉"]
 cozy = ["С тобой даже тишина уютная 🤍", "Ты — как плед, под который хочется спрятаться 🧺"]
 
-# Обработка команд
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+dispatcher = Dispatcher(bot, None, workers=0, use_context=True)
+
+def start(update, context):
     keyboard = [
         [InlineKeyboardButton("💖 Романтичный", callback_data='romantic')],
         [InlineKeyboardButton("🔥 Мотивационный", callback_data='motivational')],
@@ -18,21 +23,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🧸 Уютный", callback_data='cozy')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Выбери комплимент:", reply_markup=reply_markup)
+    update.message.reply_text("Выбери комплимент:", reply_markup=reply_markup)
 
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def button(update, context):
     query = update.callback_query
-    await query.answer()
     category = query.data
     compliment = random.choice(globals()[category])
-    await query.edit_message_text(text=compliment)
+    query.edit_message_text(text=compliment)
 
-def main():
-    token = os.environ.get("BOT_TOKEN")
-    app = ApplicationBuilder().token(token).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(button))
-    app.run_polling()
+dispatcher.add_handler(CommandHandler("start", start))
+dispatcher.add_handler(CallbackQueryHandler(button))
 
-if __name__ == '__main__':
-    main()
+@app.route(f"/{TOKEN}", methods=["POST"])
+def webhook():
+    update = Update.de_json(request.get_json(force=True), bot)
+    dispatcher.process_update(update)
+    return "ok"
+
+@app.route("/")
+def index():
+    return "Бот работает!"
+
+if __name__ == "__main__":
+    bot.delete_webhook()
+    bot.set_webhook(url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
+    app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
