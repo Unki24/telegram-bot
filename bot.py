@@ -452,11 +452,12 @@ if __name__ == "__main__":
 
         await application.initialize()
         await application.start()
-
         await application.bot.delete_webhook()
         await application.bot.set_webhook(
             url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}"
         )
 
     run(main())
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
