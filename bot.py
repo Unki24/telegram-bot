@@ -442,16 +442,13 @@ def index():
     return "Бот работает!"
 
 if __name__ == "__main__":
-    application = Application.builder().token(TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(handle_callback))
+    from asyncio import run
 
-    async def setup():
+    async def main():
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(CallbackQueryHandler(handle_callback))
         await application.bot.delete_webhook()
-        await application.bot.set_webhook(
-            url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
+        await application.bot.set_webhook(url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
 
-    import asyncio
-    asyncio.run(setup())
-
+    run(main())
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
