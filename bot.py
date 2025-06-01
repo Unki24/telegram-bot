@@ -8,7 +8,8 @@ app = Flask(__name__)
 
 TOKEN = os.environ.get("TOKEN")
 
-application = Application.builder().token(TOKEN).build()
+if not TOKEN:
+    raise ValueError("Не задана переменная окружения TOKEN!")
 
 romantic = ["Ты делаешь мою жизнь ярче одним взглядом ✨",
     "С тобой каждый момент кажется волшебным 🌟",
@@ -432,7 +433,8 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @app.route(f"/{TOKEN}", methods=["POST"])
 def webhook():
-    application.update_queue.put_nowait(Update.de_json(request.get_json(force=True), application.bot))
+    update = Update.de_json(request.get_json(force=True), application.bot)
+    application.update_queue.put_nowait(update)
     return "ok"
 
 @app.route("/")
@@ -440,16 +442,16 @@ def index():
     return "Бот работает!"
 
 if __name__ == "__main__":
+    application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(handle_callback))
- 
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 
-def setup_webhook():
-    import asyncio
-    async def _set():
+    async def setup():
         await application.bot.delete_webhook()
-        await application.bot.set_webhook(url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
-    asyncio.create_task(_set())
-   
-app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+        await application.bot.set_webhook(
+            url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
+
+    import asyncio
+    asyncio.run(setup())
+
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
