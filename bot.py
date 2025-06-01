@@ -8,6 +8,9 @@ app = Flask(__name__)
 
 TOKEN = os.environ.get("TOKEN")
 
+if not TOKEN:
+    raise ValueError("Переменная окружения TOKEN не установлена!")
+
 application = Application.builder().token(TOKEN).build()
 
 romantic = ["Ты делаешь мою жизнь ярче одним взглядом ✨",
@@ -451,3 +454,4 @@ if __name__ == "__main__":
 
     run(main())
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
