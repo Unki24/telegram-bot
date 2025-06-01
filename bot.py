@@ -8,8 +8,6 @@ app = Flask(__name__)
 
 TOKEN = os.environ.get("TOKEN")
 
-if not TOKEN:
-    raise ValueError("Не задана переменная окружения TOKEN!")
 application = Application.builder().token(TOKEN).build()
 
 romantic = ["Ты делаешь мою жизнь ярче одним взглядом ✨",
