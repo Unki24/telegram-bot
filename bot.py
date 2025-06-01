@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 
 app = Flask(__name__)
 
-TOKEN = "8008117696:AAGE0zq55Jb7mnZDZtO77k8dHiJsTs9jtpI"
+TOKEN = os.environ.get("TOKEN")
 
 romantic = ["Ты делаешь мою жизнь ярче одним взглядом ✨",
     "С тобой каждый момент кажется волшебным 🌟",
