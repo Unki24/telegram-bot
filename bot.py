@@ -442,9 +442,13 @@ def index():
 if __name__ == "__main__":
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(handle_callback))
+ app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 
-import asyncio
-asyncio.run(application.bot.delete_webhook())
-asyncio.run(application.bot.set_webhook(url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}"))
+def setup_webhook():
+    import asyncio
+    async def _set():
+        await application.bot.delete_webhook()
+        await application.bot.set_webhook(url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
+    asyncio.create_task(_set())
    
 app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
