@@ -449,7 +449,6 @@ if __name__ == "__main__":
     async def main():
         application.add_handler(CommandHandler("start", start))
         application.add_handler(CallbackQueryHandler(handle_callback))
-
         await application.initialize()
         await application.start()
         await application.bot.delete_webhook()
@@ -459,5 +458,5 @@ if __name__ == "__main__":
 
     run(main())
 
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
