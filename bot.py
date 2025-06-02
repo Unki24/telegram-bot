@@ -444,14 +444,21 @@ def index():
     return "Бот работает!"
 
 if __name__ == "__main__":
-    from asyncio import run
+    import threading
+    import asyncio
+
+    def run_flask():
+        app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+
+    threading.Thread(target=run_flask).start()
 
     async def main():
         application.add_handler(CommandHandler("start", start))
         application.add_handler(CallbackQueryHandler(handle_callback))
         await application.bot.delete_webhook()
         await application.bot.set_webhook(url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
+        await application.initialize()
+        await application.start()
+        await application.updater.start_polling()
 
-    run(main())
-
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+    asyncio.run(main())
