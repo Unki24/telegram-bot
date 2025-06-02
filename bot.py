@@ -449,14 +449,9 @@ if __name__ == "__main__":
     async def main():
         application.add_handler(CommandHandler("start", start))
         application.add_handler(CallbackQueryHandler(handle_callback))
-        await application.initialize()
-        await application.start()
         await application.bot.delete_webhook()
-        await application.bot.set_webhook(
-            url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}"
-        )
+        await application.bot.set_webhook(url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
 
     run(main())
 
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
